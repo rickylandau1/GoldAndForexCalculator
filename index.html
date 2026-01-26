@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOLDSILVER GLOBAL - מחשבון שווי שוק</title>
+    <title>GOLDSILVER GLOBAL - מחשבון פרימיום</title>
 
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
@@ -42,13 +42,23 @@
         .input-group { margin-bottom: 22px; }
         label { display: block; font-size: 14px; color: var(--gold); margin-bottom: 10px; font-weight: 600; }
 
+        /* תיקון צבעים לתיבות הקלט והבחירה */
         input, select {
             width: 100%; padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #2a2a2a; /* צבע כהה קבוע במקום שקיפות למניעת בעיות תצוגה */
             border: 1px solid #444; border-radius: 15px;
             color: white; font-size: 18px; outline: none;
             transition: all 0.3s ease; box-sizing: border-box;
+            appearance: none; -webkit-appearance: none; /* מסיר עיצוב ברירת מחדל של דפדפנים */
         }
+
+        /* כאן התיקון הקריטי לצבע הלבן ברשימה */
+        select option {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        input:focus, select:focus { border-color: var(--gold-bright); background: #333; }
 
         .result-panel {
             background: rgba(0, 0, 0, 0.4); border-radius: 20px;
@@ -69,10 +79,10 @@
         }
 
         .market-item { text-align: right; }
-        .market-item span { font-size: 11px; color: white; display: block; margin-bottom: 4px; }
+        .market-item span { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
         .market-item b { color: #efefef; font-size: 14px; font-family: monospace; }
 
-        .status-bar { font-size: 10px; color: #666; margin-top: 20px; text-align: center; }
+        .status-bar { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
         .footer { padding: 20px; font-size: 12px; color: #555; letter-spacing: 1px; }
     </style>
 </head>
@@ -91,7 +101,7 @@
         </div>
 
         <div class="input-group">
-            <label>סוג הזהב (קראט / טוהר):</label>
+            <label>סוג הזהב (קראט):</label>
             <select id="purity" onchange="calculate()">
                 <option value="1">24 קראט (999.9)</option>
                 <option value="0.916">22 קראט (916)</option>
@@ -104,7 +114,7 @@
         </div>
 
         <div class="result-panel">
-            <span class="result-label" style="font-size: 15px; color: #888; margin-bottom: 12px; display: block;">שווי נוכחי בשקלים:</span>
+            <span style="font-size: 15px; color: #888; margin-bottom: 12px; display: block;">שווי נוכחי בשקלים:</span>
             <span class="total-price" id="total-ils">₪ --</span>
             
             <div class="market-grid">
@@ -115,7 +125,7 @@
             </div>
         </div>
         
-        <div id="status" class="status-bar">מתחבר לנתוני בורסה...</div>
+        <div id="status" class="status-bar">מתחבר לבורסה...</div>
     </div>
 
     <div class="footer">© GOLDSILVER GLOBAL LTD</div>
@@ -125,7 +135,7 @@
 
     async function updateData() {
         try {
-            // קריאה לשני שרתים אמינים במקביל
+            // שימוש ב-API של CoinGecko למקסימום יציבות
             const [goldRes, rateRes] = await Promise.all([
                 fetch('https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd'),
                 fetch('https://api.frankfurter.app/latest?from=USD&to=ILS')
@@ -134,18 +144,15 @@
             const goldData = await goldRes.json();
             const rateData = await rateRes.json();
 
-            // בינואר 2026 הזהב סביב $5,040.73 והדולר סביב 3.1360
+            // נתוני ינואר 2026: מחיר אונקיה $5040.73, שער דולר 3.1360
             if (goldData['pax-gold'] && rateData.rates.ILS) {
                 market.ozUSD = goldData['pax-gold'].usd;
                 market.rateILS = rateData.rates.ILS;
                 document.getElementById('status').innerText = "בורסה מעודכנת ✅ " + new Date().toLocaleTimeString();
                 calculate();
-            } else {
-                document.getElementById('status').innerText = "ממתין לעדכון נתונים מהשרת...";
             }
         } catch (e) {
-            document.getElementById('status').innerText = "שגיאת חיבור לבורסה. בדוק אינטרנט.";
-            console.error(e);
+            document.getElementById('status').innerText = "שגיאת חיבור לבורסה.";
         }
     }
 
@@ -171,7 +178,7 @@
     }
 
     updateData();
-    setInterval(updateData, 60000); // רענון פעם בדקה
+    setInterval(updateData, 60000); 
 </script>
 </body>
 </html>
