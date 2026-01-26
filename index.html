@@ -42,35 +42,37 @@
         .input-group { margin-bottom: 22px; position: relative; }
         label { display: block; font-size: 14px; color: var(--gold); margin-bottom: 10px; font-weight: 600; }
 
-        /* תיקון צבע טקסט ללבן והוספת עיצוב פרימיום */
+        /* תיקון: צבע טקסט לבן והוספת סגנון לתיבות */
         input, select {
             width: 100%; padding: 16px;
             background: #2a2a2a; 
             border: 1px solid #444; border-radius: 15px;
-            color: #ffffff; /* טקסט לבן לקריאות מקסימלית */
+            color: #ffffff !important; /* טקסט לבן ברור */
             font-size: 18px; outline: none;
             transition: all 0.3s ease; box-sizing: border-box;
             appearance: none; -webkit-appearance: none;
         }
 
-        /* הוספת חץ בחירה מעוצב לתיבת הקראט */
-        .select-wrapper { position: relative; }
-        .select-wrapper::after {
+        /* הוספת חץ זהב מעוצב לתיבת הבחירה */
+        .select-container { position: relative; }
+        .select-container::after {
             content: '▼';
             font-size: 12px;
             color: var(--gold);
             position: absolute;
-            left: 15px;
+            left: 15px; /* צד שמאל כי האתר ב-RTL */
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
         }
 
-        /* אפקט מעבר לתיבות */
-        input:hover, select:hover { border-color: #666; }
-        input:focus, select:focus { border-color: var(--gold-bright); background: #333; box-shadow: 0 0 8px rgba(212, 175, 55, 0.2); }
+        input:focus, select:focus { border-color: var(--gold-bright); background: #333; }
 
-        select option { background-color: #1a1a1a; color: white; }
+        /* תיקון: מניעת הרקע הלבן ברשימה הנפתחת */
+        select option {
+            background-color: #1a1a1a;
+            color: white;
+        }
 
         .result-panel {
             background: rgba(0, 0, 0, 0.4); border-radius: 20px;
@@ -114,7 +116,7 @@
 
         <div class="input-group">
             <label>סוג הזהב (קראט):</label>
-            <div class="select-wrapper">
+            <div class="select-container">
                 <select id="purity" onchange="calculate()">
                     <option value="1">24 קראט (999.9)</option>
                     <option value="0.916">22 קראט (916)</option>
@@ -157,7 +159,6 @@
             const goldData = await goldRes.json();
             const rateData = await rateRes.json();
 
-            // נתוני ינואר 2026: מחיר אונקיה $5040.73, שער דולר 3.1360
             if (goldData['pax-gold'] && rateData.rates.ILS) {
                 market.ozUSD = goldData['pax-gold'].usd;
                 market.rateILS = rateData.rates.ILS;
