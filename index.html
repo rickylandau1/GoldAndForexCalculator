@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOLDSILVER GLOBAL - מחשבון שווי שוק</title>
 
-    <link rel="icon" type="png" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
 
     <style>
@@ -25,15 +25,8 @@
             min-height: 100vh;
         }
 
-        .header {
-            width: 100%; max-width: 450px;
-            padding: 25px 0; text-align: center;
-        }
-
-        .header img {
-            width: 75%; max-width: 300px;
-            filter: drop-shadow(0 4px 15px rgba(212, 175, 55, 0.4));
-        }
+        .header { width: 100%; max-width: 450px; padding: 25px 0; text-align: center; }
+        .header img { width: 75%; max-width: 300px; filter: drop-shadow(0 4px 15px rgba(212, 175, 55, 0.4)); }
 
         .calculator-card {
             width: 92%; max-width: 420px;
@@ -44,12 +37,7 @@
             box-sizing: border-box; margin-bottom: 30px;
         }
 
-        h1 {
-            color: var(--gold); font-size: 24px;
-            text-align: center; margin: 0 0 30px 0;
-            font-weight: 300; letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        h1 { color: var(--gold); font-size: 24px; text-align: center; margin: 0 0 30px 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
 
         .input-group { margin-bottom: 22px; }
         label { display: block; font-size: 14px; color: var(--gold); margin-bottom: 10px; font-weight: 600; }
@@ -120,49 +108,49 @@
             <span class="total-price" id="total-ils">₪ --</span>
             
             <div class="market-grid">
-                <div class="market-item"><span>מחיר אונקיה:</span><b id="oz-usd">--</b></div>
-                <div class="market-item"><span>שער דולר (₪/$):</span><b id="rate-ils">--</b></div>
-                <div class="market-item"><span>מחיר לגרם ($):</span><b id="gram-usd">--</b></div>
-                <div class="market-item"><span>מחיר לגרם (₪):</span><b id="gram-ils">--</b></div>
+                <div class="market-item"><span>אונקיה (Spot):</span><b id="oz-usd">--</b></div>
+                <div class="market-item"><span>שער דולר (₪):</span><b id="rate-ils">--</b></div>
+                <div class="market-item"><span>גרם ($):</span><b id="gram-usd">--</b></div>
+                <div class="market-item"><span>גרם (₪):</span><b id="gram-ils">--</b></div>
             </div>
         </div>
         
-        <div id="status" class="status-bar">מתחבר ל-API של הבורסה...</div>
+        <div id="status" class="status-bar">מתחבר לבורסה בזמן אמת...</div>
     </div>
 
     <div class="footer">© GOLDSILVER GLOBAL LTD</div>
 
 <script>
-    // שימוש במפתח ה-Finnhub שסיפקת
+    // שימוש במפתח ה-Finnhub האישי שלך
     const FINNHUB_KEY = "d5rrv99r01qj5oilp6tgd5rrv99r01qj5oilp6u0";
     let market = { ozUSD: 0, rateILS: 0 };
 
     async function updateData() {
         try {
-            // קריאת מחיר זהב חי (OANDA)
-            const gRes = await fetch(`https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${FINNHUB_KEY}`);
-            const gJson = await gRes.json();
-            
-            // קריאת שער דולר חי
-            const rRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=ILS');
-            const rJson = await rRes.json();
+            // קריאה לשני מקורות הנתונים במקביל למהירות שיא
+            const [goldRes, rateRes] = await Promise.all([
+                fetch(`https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${FINNHUB_KEY}`),
+                fetch('https://api.frankfurter.app/latest?from=USD&to=ILS')
+            ]);
 
-            // עדכון המשתנים רק אם ה-API החזיר תשובה תקינה
+            const gJson = await goldRes.json();
+            const rJson = await rateRes.json();
+
+            // בדיקה שהנתונים הגיעו (זהב סביב $5,040, דולר סביב 3.1360)
             if (gJson.c && rJson.rates.ILS) {
                 market.ozUSD = gJson.c;
                 market.rateILS = rJson.rates.ILS;
-                document.getElementById('status').innerText = "נתוני API התקבלו: " + new Date().toLocaleTimeString();
+                document.getElementById('status').innerText = "בורסה מעודכנת ✅ " + new Date().toLocaleTimeString();
                 calculate();
             } else {
-                document.getElementById('status').innerText = "שגיאה: ה-API לא החזיר נתונים.";
+                document.getElementById('status').innerText = "ממתין לתגובה מהבורסה...";
             }
         } catch (e) {
-            document.getElementById('status').innerText = "שגיאת חיבור ל-API. ודא חיבור אינטרנט.";
+            document.getElementById('status').innerText = "שגיאת חיבור ל-API.";
         }
     }
 
     function calculate() {
-        // אם אין עדיין נתונים מה-API, לא מחשבים
         if (market.ozUSD === 0 || market.rateILS === 0) return;
         
         const weight = parseFloat(document.getElementById('weight').value) || 0;
@@ -173,8 +161,7 @@
         const currentGramILS = currentGramUSD * market.rateILS;
         const totalILS = weight * currentGramILS;
 
-        // עדכון התצוגה לפי נתוני ה-API בלבד
-        document.getElementById('oz-usd').innerText = "$" + market.ozUSD.toFixed(2);
+        document.getElementById('oz-usd').innerText = "$" + market.ozUSD.toLocaleString(undefined, {minimumFractionDigits: 2});
         document.getElementById('rate-ils').innerText = "₪" + market.rateILS.toFixed(4);
         document.getElementById('gram-usd').innerText = "$" + currentGramUSD.toFixed(2);
         document.getElementById('gram-ils').innerText = "₪" + currentGramILS.toFixed(2);
@@ -184,9 +171,8 @@
         });
     }
 
-    // הפעלה
     updateData();
-    setInterval(updateData, 60000); // רענון מה-API כל דקה
+    setInterval(updateData, 60000); // רענון מהיר כל דקה
 </script>
 </body>
 </html>
