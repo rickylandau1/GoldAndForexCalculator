@@ -38,50 +38,49 @@
 
         h1 { color: var(--gold); font-size: 24px; text-align: center; margin: 0 0 30px 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
 
-        .input-group { margin-bottom: 22px; position: relative; }
+        .input-group { margin-bottom: 22px; }
         label { display: block; font-size: 14px; color: var(--gold); margin-bottom: 10px; font-weight: 600; }
 
-        /* עיצוב תיבות הקלט - טקסט לבן */
+        /* עיצוב תיבות הקלט - טקסט לבן וברור */
         input, select {
             width: 100%; padding: 16px;
             background: #2a2a2a; 
             border: 1px solid #444; border-radius: 15px;
-            color: #ffffff !important;
-            font-size: 18px; outline: none;
+            color: #ffffff !important; /* טקסט לבן במקום שחור */
+            font-size: 20px; outline: none;
             transition: all 0.3s ease; box-sizing: border-box;
             appearance: none; -webkit-appearance: none;
             text-align: center;
         }
 
-        /* הוספת חיצי זהב למשקל */
-        .weight-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* הסתרת חיצי דפדפן מקוריים */
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
+        /* כפתורי שליטה זהובים למשקל */
+        .controls-container { display: flex; align-items: center; gap: 10px; }
         .step-btn {
-            background: #2a2a2a;
+            background: #1a1a1a;
             border: 1px solid var(--gold);
             color: var(--gold);
-            width: 50px; height: 50px;
-            border-radius: 12px;
-            font-size: 24px;
+            width: 55px; height: 55px;
+            border-radius: 15px;
+            font-size: 28px;
             cursor: pointer;
-            transition: 0.2s;
             display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
         }
-
         .step-btn:active { background: var(--gold); color: black; }
 
-        /* חץ זהב לתיבת הקראט */
-        .select-container { position: relative; width: 100%; }
-        .select-container::after {
+        /* חץ זהב מעוצב לתיבת הקראט */
+        .select-wrapper { position: relative; width: 100%; }
+        .select-wrapper::after {
             content: '▼';
             font-size: 12px; color: var(--gold);
             position: absolute; left: 15px; top: 50%;
             transform: translateY(-50%); pointer-events: none;
         }
+
+        select option { background-color: #1a1a1a; color: white; }
 
         .result-panel {
             background: rgba(0, 0, 0, 0.4); border-radius: 20px;
@@ -119,17 +118,17 @@
         <h1>מחשבון שווי שוק</h1>
         
         <div class="input-group">
-            <label>משקל זהב מדויק (גרם):</label>
-            <div class="weight-controls">
-                <button class="step-btn" onclick="adjustWeight(-1)">−</button>
-                <input type="number" id="weight" value="1.00" step="1" min="0" inputmode="decimal" oninput="calculate()">
-                <button class="step-btn" onclick="adjustWeight(1)">+</button>
+            <label>משקל זהב (גרמים):</label>
+            <div class="controls-container">
+                <button class="step-btn" onclick="changeWeight(-1)">−</button>
+                <input type="number" id="weight" value="1.00" step="1" min="0" oninput="calculate()">
+                <button class="step-btn" onclick="changeWeight(1)">+</button>
             </div>
         </div>
 
         <div class="input-group">
             <label>סוג הזהב (קראט):</label>
-            <div class="select-container">
+            <div class="select-wrapper">
                 <select id="purity" onchange="calculate()">
                     <option value="1">24 קראט (999.9)</option>
                     <option value="0.916">22 קראט (916)</option>
@@ -154,7 +153,7 @@
             </div>
         </div>
         
-        <div id="status" class="status-bar">מתחבר לבורסה...</div>
+        <div id="status" class="status-bar">מתחבר לנתונים חיים...</div>
     </div>
 
     <div class="footer">© GOLDSILVER GLOBAL LTD</div>
@@ -162,11 +161,13 @@
 <script>
     let market = { ozUSD: 0, rateILS: 0 };
 
-    function adjustWeight(amount) {
-        const input = document.getElementById('weight');
-        let newVal = parseFloat(input.value || 0) + amount;
-        if (newVal < 0) newVal = 0;
-        input.value = newVal.toFixed(2);
+    // פונקציית שליטה במשקל (קפיצות של 1, מינימום 0)
+    function changeWeight(amount) {
+        const weightInput = document.getElementById('weight');
+        let current = parseFloat(weightInput.value || 0);
+        let updated = current + amount;
+        if (updated < 0) updated = 0;
+        weightInput.value = updated.toFixed(2);
         calculate();
     }
 
@@ -179,6 +180,7 @@
             const goldData = await goldRes.json();
             const rateData = await rateRes.json();
 
+            // נתוני ינואר 2026: מחיר אונקיה $5040.73, שער דולר 3.1360
             if (goldData['pax-gold'] && rateData.rates.ILS) {
                 market.ozUSD = goldData['pax-gold'].usd;
                 market.rateILS = rateData.rates.ILS;
