@@ -72,7 +72,7 @@
         .market-item span { font-size: 11px; color: white; display: block; margin-bottom: 4px; }
         .market-item b { color: #efefef; font-size: 14px; font-family: monospace; }
 
-        .status-bar { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
+        .status-bar { font-size: 10px; color: #666; margin-top: 20px; text-align: center; }
         .footer { padding: 20px; font-size: 12px; color: #555; letter-spacing: 1px; }
     </style>
 </head>
@@ -115,7 +115,7 @@
             </div>
         </div>
         
-        <div id="status" class="status-bar">טוען נתוני בורסה...</div>
+        <div id="status" class="status-bar">מתחבר לנתוני בורסה...</div>
     </div>
 
     <div class="footer">© GOLDSILVER GLOBAL LTD</div>
@@ -125,27 +125,27 @@
 
     async function updateData() {
         try {
-            // קריאה במקביל ל-Binance (זהב) ול-Frankfurter (דולר)
-            // Binance PAXG/USDT עוקב בדיוק אחרי אונקיית זהב
+            // קריאה לשני שרתים אמינים במקביל
             const [goldRes, rateRes] = await Promise.all([
-                fetch(`https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT`),
+                fetch('https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd'),
                 fetch('https://api.frankfurter.app/latest?from=USD&to=ILS')
             ]);
 
-            const gJson = await goldRes.json();
-            const rJson = await rateRes.json();
+            const goldData = await goldRes.json();
+            const rateData = await rateRes.json();
 
-            // ב-2026 הזהב מעל 5,000$ והדולר סביב 3.136
-            if (gJson.price && rJson.rates.ILS) {
-                market.ozUSD = parseFloat(gJson.price);
-                market.rateILS = rJson.rates.ILS;
+            // בינואר 2026 הזהב סביב $5,040.73 והדולר סביב 3.1360
+            if (goldData['pax-gold'] && rateData.rates.ILS) {
+                market.ozUSD = goldData['pax-gold'].usd;
+                market.rateILS = rateData.rates.ILS;
                 document.getElementById('status').innerText = "בורסה מעודכנת ✅ " + new Date().toLocaleTimeString();
                 calculate();
             } else {
-                document.getElementById('status').innerText = "ממתין לתגובה מהשרת...";
+                document.getElementById('status').innerText = "ממתין לעדכון נתונים מהשרת...";
             }
         } catch (e) {
-            document.getElementById('status').innerText = "שגיאת חיבור. ודא חיבור אינטרנט.";
+            document.getElementById('status').innerText = "שגיאת חיבור לבורסה. בדוק אינטרנט.";
+            console.error(e);
         }
     }
 
@@ -171,7 +171,7 @@
     }
 
     updateData();
-    setInterval(updateData, 60000); 
+    setInterval(updateData, 60000); // רענון פעם בדקה
 </script>
 </body>
 </html>
