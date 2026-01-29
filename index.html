@@ -103,7 +103,27 @@
         .market-item b { color: #efefef; font-size: 14px; font-family: monospace; }
 
         .status-bar { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
-        .footer { padding: 20px; font-size: 12px; color: #555; letter-spacing: 1px; }
+
+        /* עיצוב חדש לאזור יצירת קשר */
+        .contact-section {
+            text-align: center;
+            color: var(--gold);
+            margin-top: 10px;
+            margin-bottom: 40px;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            line-height: 1.8;
+            text-transform: uppercase;
+        }
+
+        .contact-name {
+            font-weight: 700;
+            color: #efefef; /* שם בלבן/אפור בהיר להדגשה */
+            font-size: 15px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
     </style>
 </head>
 <body>
@@ -154,7 +174,16 @@
         <div id="status" class="status-bar">מתחבר לנתונים חיים...</div>
     </div>
 
-    <div class="footer">© GOLDSILVER GLOBAL LTD</div>
+    <div class="contact-section" dir="ltr"> <div class="contact-name">
+            YEHUDA BENISH<br>
+            GOLDSILVER GLOBAL LTD.
+        </div>
+        
+        <div style="color: #bbb;">
+            SAPIR TOWER 40<br>
+            TUVAL STREET<br>
+            RAMAT GAN, ISRAEL
+        </div>
 
 <script>
     let market = { ozUSD: 0, rateILS: 0 };
