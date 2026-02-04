@@ -29,6 +29,7 @@
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
             overscroll-behavior-y: none; 
+            padding-bottom: 80px; /* מקום לכפתור ההתקנה */
         }
 
         .header { width: 100%; max-width: 450px; padding: 25px 0; text-align: center; }
@@ -109,16 +110,62 @@
 
         .status-bar { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
 
-        /* אזור פרטי הקשר - מעודכן ללא טלפון ומייל */
+        /* אזור יצירת קשר החדש */
         .contact-section {
             text-align: center; color: var(--gold); margin-top: 10px; margin-bottom: 40px;
             font-size: 13px; letter-spacing: 1.5px; line-height: 1.8; text-transform: uppercase;
         }
         .contact-name { font-weight: 700; color: #efefef; font-size: 15px; margin-bottom: 12px; display: block; }
         
-        /* אין יותר קישורים לטלפון או מייל כאן */
-        
+        .contact-link {
+            color: var(--gold);
+            text-decoration: none;
+            display: block;
+            margin-top: 5px;
+            font-weight: 600;
+            transition: color 0.3s;
+            font-size: 14px;
+        }
+        .contact-link:hover { color: var(--gold-bright); }
+
+        .divider { width: 50px; height: 1px; background: #333; margin: 15px auto; }
         .footer { padding: 20px; font-size: 12px; color: #555; letter-spacing: 1px; }
+
+        /* כפתור התקנה צף */
+        #install-btn {
+            display: none; /* מוסתר כברירת מחדל */
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, var(--gold), #b8860b);
+            color: black;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 16px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        /* חלונית הסבר לאייפון */
+        #ios-instructions {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #222;
+            border-top: 2px solid var(--gold);
+            padding: 20px;
+            text-align: center;
+            z-index: 2000;
+            border-radius: 20px 20px 0 0;
+        }
+        .ios-step { margin: 10px 0; color: white; font-size: 14px; }
+        .ios-icon { font-size: 20px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -179,12 +226,25 @@
             TUVAL STREET<br>
             RAMAT GAN, ISRAEL
         </div>
+        <div class="divider"></div>
+        <a href="tel:03330210" class="contact-link">03-330210</a>
+        <a href="mailto:sg@goldsilver.ltd" class="contact-link">sg@goldsilver.ltd</a>
     </div>
 
     <div class="footer">© GOLDSILVER GLOBAL LTD</div>
 
+    <div id="install-btn" onclick="installApp()">📲 התקן את האפליקציה</div>
+
+    <div id="ios-instructions">
+        <div style="color: var(--gold); font-weight: bold; margin-bottom: 10px;">התקנה באייפון</div>
+        <div class="ios-step">1. לחץ על כפתור השיתוף למטה <span class="ios-icon">⎋</span></div>
+        <div class="ios-step">2. גלול ובחר "הוסף למסך הבית" <span class="ios-icon">➕</span></div>
+        <div class="ios-step" style="margin-top: 15px; color: #888; font-size: 12px;" onclick="document.getElementById('ios-instructions').style.display='none'">סגור X</div>
+    </div>
+
 <script>
     let market = { ozUSD: 0, rateILS: 0 };
+    let deferredPrompt;
 
     function changeWeight(amount) {
         const weightInput = document.getElementById('weight');
@@ -203,8 +263,6 @@
             if (data['pax-gold']) {
                 market.ozUSD = data['pax-gold'].usd;
                 const ozILS = data['pax-gold'].ils;
-                
-                // חישוב שער הדולר מתוך היחס בין הזהב בשקל לזהב בדולר
                 market.rateILS = ozILS / market.ozUSD;
 
                 document.getElementById('status').innerText = "בורסה מעודכנת ✅ " + new Date().toLocaleTimeString();
@@ -230,6 +288,43 @@
         document.getElementById('gram-usd').innerText = "$" + currentGramUSD.toFixed(2);
         document.getElementById('gram-ils').innerText = "₪" + currentGramILS.toFixed(2);
         document.getElementById('total-ils').innerText = "₪ " + totalILS.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // --- לוגיקה להתקנת אפליקציה ---
+    
+    // בדיקה אם כבר מותקן
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    if (!isStandalone) {
+        // זיהוי אייפון
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (isIOS) {
+            document.getElementById('install-btn').style.display = 'block';
+        }
+
+        // זיהוי אנדרואיד וכרום
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-btn').style.display = 'block';
+        });
+    }
+
+    function installApp() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        if (isIOS) {
+            document.getElementById('ios-instructions').style.display = 'block';
+        } else if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    document.getElementById('install-btn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        }
     }
 
     updateData();
