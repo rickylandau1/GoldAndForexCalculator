@@ -28,7 +28,6 @@
             color: #ffffff;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
-            /* מונע גלילה מיותרת באפליקציה */
             overscroll-behavior-y: none; 
         }
 
@@ -49,7 +48,6 @@
         .input-group { margin-bottom: 22px; position: relative; }
         label { display: block; font-size: 14px; color: var(--gold); margin-bottom: 10px; font-weight: 600; }
 
-        /* עיצוב תיבות הקלט */
         input, select {
             width: 100%; padding: 16px;
             background: #2a2a2a; 
@@ -73,7 +71,6 @@
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: 0.2s;
-            /* מונע בחירת טקסט בלחיצה כפולה באפליקציה */
             user-select: none; 
         }
         .step-btn:active { background: var(--gold); color: black; }
@@ -112,14 +109,15 @@
 
         .status-bar { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
 
+        /* אזור פרטי הקשר - מעודכן ללא טלפון ומייל */
         .contact-section {
             text-align: center; color: var(--gold); margin-top: 10px; margin-bottom: 40px;
             font-size: 13px; letter-spacing: 1.5px; line-height: 1.8; text-transform: uppercase;
         }
         .contact-name { font-weight: 700; color: #efefef; font-size: 15px; margin-bottom: 12px; display: block; }
-        .contact-link { color: var(--gold); text-decoration: none; display: block; margin-top: 5px; font-weight: 600; transition: color 0.3s; }
-        .contact-link:hover { color: var(--gold-bright); }
-        .divider { width: 50px; height: 1px; background: #333; margin: 15px auto; }
+        
+        /* אין יותר קישורים לטלפון או מייל כאן */
+        
         .footer { padding: 20px; font-size: 12px; color: #555; letter-spacing: 1px; }
     </style>
 </head>
@@ -181,9 +179,6 @@
             TUVAL STREET<br>
             RAMAT GAN, ISRAEL
         </div>
-        <div class="divider"></div>
-        <a href="tel:+972544266639" class="contact-link">+972 54-426-6639</a>
-        <a href="mailto:LB@GOLDSILVER.LTD" class="contact-link">LB@GOLDSILVER.LTD</a>
     </div>
 
     <div class="footer">© GOLDSILVER GLOBAL LTD</div>
@@ -208,6 +203,8 @@
             if (data['pax-gold']) {
                 market.ozUSD = data['pax-gold'].usd;
                 const ozILS = data['pax-gold'].ils;
+                
+                // חישוב שער הדולר מתוך היחס בין הזהב בשקל לזהב בדולר
                 market.rateILS = ozILS / market.ozUSD;
 
                 document.getElementById('status').innerText = "בורסה מעודכנת ✅ " + new Date().toLocaleTimeString();
