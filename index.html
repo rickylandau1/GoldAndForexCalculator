@@ -29,7 +29,7 @@
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
             overscroll-behavior-y: none; 
-            padding-bottom: 80px; /* מקום לכפתור ההתקנה */
+            padding-bottom: 80px;
         }
 
         .header { width: 100%; max-width: 450px; padding: 25px 0; text-align: center; }
@@ -110,7 +110,7 @@
 
         .status-bar { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
 
-        /* אזור יצירת קשר החדש */
+        /* אזור יצירת קשר */
         .contact-section {
             text-align: center; color: var(--gold); margin-top: 10px; margin-bottom: 40px;
             font-size: 13px; letter-spacing: 1.5px; line-height: 1.8; text-transform: uppercase;
@@ -133,7 +133,7 @@
 
         /* כפתור התקנה צף */
         #install-btn {
-            display: none; /* מוסתר כברירת מחדל */
+            display: none;
             position: fixed;
             bottom: 20px;
             left: 50%;
@@ -228,6 +228,7 @@
         </div>
         <div class="divider"></div>
         <a href="tel:03330210" class="contact-link">03-330210</a>
+        <a href="https://wa.me/972515715660" class="contact-link">WhatsApp: +972 51-571-5660</a>
         <a href="mailto:sg@goldsilver.ltd" class="contact-link">sg@goldsilver.ltd</a>
     </div>
 
@@ -292,18 +293,14 @@
 
     // --- לוגיקה להתקנת אפליקציה ---
     
-    // בדיקה אם כבר מותקן
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     
     if (!isStandalone) {
-        // זיהוי אייפון
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
         if (isIOS) {
             document.getElementById('install-btn').style.display = 'block';
         }
 
-        // זיהוי אנדרואיד וכרום
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
