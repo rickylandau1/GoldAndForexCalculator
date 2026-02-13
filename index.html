@@ -275,7 +275,6 @@
         let current = parseFloat(weightInput.value || 0);
         let updated = current + amount;
         
-        // כאן אנחנו רק מעדכנים את המספר, הפונקציה calculate תבדוק אם הוא חוקי
         weightInput.value = updated.toFixed(2);
         calculate();
     }
@@ -305,25 +304,21 @@
         
         let weight = parseFloat(weightInput.value);
         
-        // --- בדיקת תקינות (הוראה חדשה) ---
-        // אם המשקל קטן מ-0 או לא קיים (NaN)
-        if (weight < 0) {
-            // הופך את התיבה לאדומה
+        // --- התיקון המיידי ---
+        // בדיקה האם יש סימן מינוס בתיבה (אפילו בלי מספר)
+        // או שהמשקל שלילי
+        if (weightInput.value.includes('-') || weight < 0) {
             weightInput.classList.add('input-error');
-            // מציג את הודעת השגיאה
             errorMessage.style.display = 'block';
-            // מאפס את המחיר לסימן ריק
             totalIlsElement.innerText = "--";
-            // עוצר את החישוב
             return;
         } else {
-            // אם הכל תקין: מנקה את האדום ומסתיר הודעה
             weightInput.classList.remove('input-error');
             errorMessage.style.display = 'none';
         }
-        // ------------------------------------
+        // ---------------------
 
-        if (isNaN(weight)) weight = 0; // הגנה נוספת אם השדה ריק
+        if (isNaN(weight)) weight = 0; 
 
         if (market.ozUSD === 0 || market.rateILS === 0) return;
         
@@ -338,13 +333,9 @@
         document.getElementById('rate-ils').innerText = "₪" + market.rateILS.toFixed(4);
         document.getElementById('gram-usd').innerText = "$" + currentGramUSD.toFixed(2);
         document.getElementById('gram-ils').innerText = "₪" + currentGramILS.toFixed(2);
-        
-        // הצגת המחיר הסופי
         totalIlsElement.innerText = "₪ " + totalILS.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // --- לוגיקה להתקנת אפליקציה ---
-    
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     
     if (!isStandalone) {
