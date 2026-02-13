@@ -19,6 +19,7 @@
             --gold: #d4af37;
             --gold-bright: #ffdf00;
             --bg-dark: #0a0a0a;
+            --error-red: #ff4444; /* צבע אדום לשגיאות */
         }
 
         body {
@@ -59,6 +60,22 @@
             appearance: none; -webkit-appearance: none;
             text-align: center;
             font-weight: bold;
+        }
+
+        /* מחלקה למצב שגיאה (מסגרת אדומה) */
+        .input-error {
+            border-color: var(--error-red) !important;
+            color: var(--error-red) !important;
+        }
+
+        /* הודעת שגיאה טקסטואלית */
+        .error-message {
+            color: var(--error-red);
+            font-size: 13px;
+            margin-top: 5px;
+            display: none; /* מוסתר כברירת מחדל */
+            font-weight: bold;
+            text-align: center;
         }
 
         .controls-container { display: flex; align-items: center; gap: 10px; }
@@ -120,7 +137,7 @@
         .contact-link {
             color: var(--gold);
             text-decoration: none;
-            display: flex; /* מסדר את האייקון ליד הטקסט */
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
@@ -131,16 +148,14 @@
         }
         .contact-link:hover { color: var(--gold-bright); }
         
-        /* הגדרות אייקונים */
         .icon-svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor; /* לוקח את צבע הזהב של הטקסט */
+            width: 20px; height: 20px; fill: currentColor;
         }
 
         .divider { width: 50px; height: 1px; background: #333; margin: 15px auto; }
         .footer { padding: 20px; font-size: 12px; color: #555; letter-spacing: 1px; }
 
+        /* כפתור התקנה */
         #install-btn {
             display: none;
             position: fixed;
@@ -178,6 +193,7 @@
                 <input type="number" id="weight" value="1.00" step="1" min="0" oninput="calculate()">
                 <button class="step-btn" onclick="changeWeight(1)">+</button>
             </div>
+            <div id="weight-error" class="error-message">נא להזין משקל חיובי בלבד</div>
         </div>
 
         <div class="input-group">
@@ -258,7 +274,8 @@
         const weightInput = document.getElementById('weight');
         let current = parseFloat(weightInput.value || 0);
         let updated = current + amount;
-        if (updated < 0) updated = 0;
+        
+        // כאן אנחנו רק מעדכנים את המספר, הפונקציה calculate תבדוק אם הוא חוקי
         weightInput.value = updated.toFixed(2);
         calculate();
     }
@@ -282,8 +299,34 @@
     }
 
     function calculate() {
+        const weightInput = document.getElementById('weight');
+        const errorMessage = document.getElementById('weight-error');
+        const totalIlsElement = document.getElementById('total-ils');
+        
+        let weight = parseFloat(weightInput.value);
+        
+        // --- בדיקת תקינות (הוראה חדשה) ---
+        // אם המשקל קטן מ-0 או לא קיים (NaN)
+        if (weight < 0) {
+            // הופך את התיבה לאדומה
+            weightInput.classList.add('input-error');
+            // מציג את הודעת השגיאה
+            errorMessage.style.display = 'block';
+            // מאפס את המחיר לסימן ריק
+            totalIlsElement.innerText = "--";
+            // עוצר את החישוב
+            return;
+        } else {
+            // אם הכל תקין: מנקה את האדום ומסתיר הודעה
+            weightInput.classList.remove('input-error');
+            errorMessage.style.display = 'none';
+        }
+        // ------------------------------------
+
+        if (isNaN(weight)) weight = 0; // הגנה נוספת אם השדה ריק
+
         if (market.ozUSD === 0 || market.rateILS === 0) return;
-        const weight = parseFloat(document.getElementById('weight').value) || 0;
+        
         const purity = parseFloat(document.getElementById('purity').value);
         
         const gram24K_USD = market.ozUSD / 31.1034768; 
@@ -295,7 +338,9 @@
         document.getElementById('rate-ils').innerText = "₪" + market.rateILS.toFixed(4);
         document.getElementById('gram-usd').innerText = "$" + currentGramUSD.toFixed(2);
         document.getElementById('gram-ils').innerText = "₪" + currentGramILS.toFixed(2);
-        document.getElementById('total-ils').innerText = "₪ " + totalILS.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // הצגת המחיר הסופי
+        totalIlsElement.innerText = "₪ " + totalILS.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     // --- לוגיקה להתקנת אפליקציה ---
